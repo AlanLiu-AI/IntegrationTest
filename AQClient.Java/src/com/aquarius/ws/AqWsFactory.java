@@ -7,7 +7,6 @@ import com.aquarius.DataAcquisition.AQAcquisitionService;
 import com.aquarius.DataAcquisition.IAQAcquisitionService;
 import com.aquarius.Publish.AquariusPublishService;
 import com.aquarius.Publish.IAquariusPublishService;
-import com.aquarius.test.TestContext;
 import com.sun.xml.ws.developer.WSBindingProvider;
 
 public final class AqWsFactory {
@@ -35,27 +34,28 @@ public final class AqWsFactory {
 	
 	public static IAQAcquisitionService newAqAcqClient(String url) throws Exception
 	{
-		return newAqAcqClient(url, null, null, false);
+		return newAqAcqClient(url, url, null, null, false);
 	}
 	
-	public static IAQAcquisitionService newAqAcqClient(String url, String user, String pwd) throws Exception {
-		return newAqAcqClient(url, user, pwd, false);
-	}
-	
-	public static IAQAcquisitionService newAqAcqBasicClient(String url) throws Exception
+	public static IAQAcquisitionService newAqAcqClient(String url, String user, String pwd) throws Exception 
 	{
-		return newAqAcqClient(url, null, null, true);
+		return newAqAcqClient(url, url, user, pwd, false);
 	}
 	
-	public static IAQAcquisitionService newAqAcqBasicClient(String url, String user, String pwd) throws Exception
+	public static IAQAcquisitionService newAqAcqBasicClient(String wsdl, String url) throws Exception
 	{
-		return newAqAcqClient(url, user, pwd, false);
+		return newAqAcqClient(wsdl, url, null, null, true);
+	}
+	
+	public static IAQAcquisitionService newAqAcqBasicClient(String wsdl, String url, String user, String pwd) throws Exception
+	{
+		return newAqAcqClient(wsdl, url, user, pwd, false);
 	}
 	
 	@SuppressWarnings("resource")
-	private static IAQAcquisitionService newAqAcqClient(String url, String user, String pwd, boolean basic) throws Exception {
+	private static IAQAcquisitionService newAqAcqClient(String wsdl, String url, String user, String pwd, boolean basic) throws Exception {
 		
-		AQAcquisitionService clientFactory = new AQAcquisitionService(new URL(TestContext.AcquisitionServiceUrl), new QName("http://tempuri.org/", "AQAcquisitionService"));
+		AQAcquisitionService clientFactory = new AQAcquisitionService(new URL(wsdl), new QName("http://tempuri.org/", "AQAcquisitionService"));
 		IAQAcquisitionService client = basic ? clientFactory.getBasicHttpBindingIAQAcquisitionService()
 				: clientFactory.getWSHttpBindingIAQAcquisitionService();
 		javax.xml.ws.BindingProvider bindingProvider = (javax.xml.ws.BindingProvider) client;
@@ -63,7 +63,7 @@ public final class AqWsFactory {
 		
 		if(!isNullOrEmpty(user) && !isNullOrEmpty(pwd))
 		{
-			String authToken = client.getAuthToken(TestContext.User,  TestContext.Pwd);
+			String authToken = client.getAuthToken(user,  pwd);
 			
 			WSBindingProvider wsBindingProvider = (WSBindingProvider) client;
 			wsBindingProvider.setOutboundHeaders(
@@ -90,7 +90,7 @@ public final class AqWsFactory {
 	
 	@SuppressWarnings("resource")
 	public static IAquariusPublishService newAqPubClient(String url, String user, String pwd) throws Exception {
-		AquariusPublishService clientFactory = new AquariusPublishService(new URL(TestContext.PublishServiceUrl), new QName("http://tempuri.org/", "AquariusPublishService"));
+		AquariusPublishService clientFactory = new AquariusPublishService(new URL(url), new QName("http://tempuri.org/", "AquariusPublishService"));
 		IAquariusPublishService client = clientFactory.getBasicHttpBindingIAquariusPublishService();
 		javax.xml.ws.BindingProvider basicBindingProvider = (javax.xml.ws.BindingProvider) client;
 		basicBindingProvider.getRequestContext().put(javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url);
